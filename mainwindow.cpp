@@ -51,12 +51,15 @@ void MainWindow::on_actionExecute_Query_triggered()
     // Execute the query.
     QSqlQuery query;
     query.setForwardOnly(true);
-    if (!query.exec(ui->plainTextEditSqlQuery->toPlainText())) {
-        QMessageBox::critical(this, "Error executing query", query.lastError().text());
-        return;
+
+    foreach (const QString &ii, ui->plainTextEditSqlQuery->toPlainText().split(QRegExp("[\\r\\n;]"), QString::SkipEmptyParts)) {
+        if (!query.exec(ii)) {
+            QMessageBox::critical(this, "Error executing query", query.lastError().text());
+            return;
+        }
     }
 
-    // Print out the results.
+    // Print out the results of the last query.
     QString resultsText;
 
     // The column names.
