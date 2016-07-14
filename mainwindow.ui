@@ -54,11 +54,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPlainTextEdit" name="plainTextEditQueryResults">
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
+         <widget class="QTableWidget" name="tableWidget"/>
         </item>
        </layout>
       </widget>

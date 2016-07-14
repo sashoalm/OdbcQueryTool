@@ -21,7 +21,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->splitter->restoreState(settings.value("window/splitter").toByteArray());
     ui->lineEditConnectionString->setText(settings.value("ConnectionString").toString());
     ui->plainTextEditSqlQuery->setPlainText(settings.value("Query").toString());
-    ui->plainTextEditQueryResults->setPlainText(settings.value("QueryResults").toString());
+
+    if (!ui->lineEditConnectionString->text().isEmpty() && !ui->plainTextEditSqlQuery->toPlainText().isEmpty()) {
+        on_actionExecute_Query_triggered();
+    }
 }
 
 MainWindow::~MainWindow()
@@ -33,7 +36,6 @@ MainWindow::~MainWindow()
     settings.setValue("window/splitter", ui->splitter->saveState());
     settings.setValue("ConnectionString", ui->lineEditConnectionString->text());
     settings.setValue("Query", ui->plainTextEditSqlQuery->toPlainText());
-    settings.setValue("QueryResults", ui->plainTextEditQueryResults->toPlainText());
 
     delete ui;
 }
@@ -59,23 +61,23 @@ void MainWindow::on_actionExecute_Query_triggered()
         }
     }
 
-    // Print out the results of the last query.
-    QString resultsText;
-
-    // The column names.
-    for (int ii = 0; ii < query.record().count(); ++ii) {
-        resultsText.append(query.record().fieldName(ii));
-        resultsText.append('\t');
+    // Populate the QTableWidget with the results.
+    // I could have used a QSqlQueryModel but it has the nasty habit
+    // of locking the table for editing, and trying to insert items
+    // from another program will fail. For small tables, it's better
+    // to just retrieve all the items and populate a small table that
+    // way.
+    QSqlRecord record = query.record();
+    ui->tableWidget->setColumnCount(record.count());
+    for (int ii = 0; ii < record.count(); ++ii) {
+        ui->tableWidget->setHorizontalHeaderItem(ii, new QTableWidgetItem(query.record().fieldName(ii)));
     }
-    resultsText.append("\n========\n\n");
 
-    // The results themselves.
+    ui->tableWidget->setRowCount(0);
     while (query.next()) {
+        ui->tableWidget->setRowCount(ui->tableWidget->rowCount() + 1);
         for (int ii = 0; ii < query.record().count(); ++ii) {
-            resultsText.append(query.value(ii).toString());
-            resultsText.append('\t');
+            ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, ii, new QTableWidgetItem(query.value(ii).toString()));
         }
-        resultsText.append('\n');
     }
-    ui->plainTextEditQueryResults->setPlainText(resultsText);
 }
