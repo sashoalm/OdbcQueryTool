@@ -16,6 +16,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Load settings.
     QSettings settings;
+    restoreGeometry(settings.value("window/geometry").toByteArray());
+    restoreState(settings.value("window/state").toByteArray());
+    ui->splitter->restoreState(settings.value("window/splitter").toByteArray());
     ui->lineEditConnectionString->setText(settings.value("ConnectionString").toString());
     ui->plainTextEditSqlQuery->setPlainText(settings.value("Query").toString());
     ui->plainTextEditQueryResults->setPlainText(settings.value("QueryResults").toString());
@@ -25,6 +28,9 @@ MainWindow::~MainWindow()
 {
     // Save settings.
     QSettings settings;
+    settings.setValue("window/geometry", saveGeometry());
+    settings.setValue("window/state", saveState());
+    settings.setValue("window/splitter", ui->splitter->saveState());
     settings.setValue("ConnectionString", ui->lineEditConnectionString->text());
     settings.setValue("Query", ui->plainTextEditSqlQuery->toPlainText());
     settings.setValue("QueryResults", ui->plainTextEditQueryResults->toPlainText());
